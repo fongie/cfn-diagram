@@ -1,5 +1,6 @@
 "use strict";
 const jsdom = require("jsdom");
+const crypto = require("crypto-js")
 const { JSDOM } = jsdom;
 const dom = new JSDOM();
 const jsonUtil = require("../resources/JsonUtil");
@@ -151,6 +152,12 @@ function addEdges(from, to, dependencyNode) {
   }
 }
 
+function createReadableName(resource, type) {
+  const readable = type.substring('AWS::'.length)
+  const hash = crypto.SHA256(resource).toString().substring(0, 4)
+  return `${readable}.${hash}`
+}
+
 function addVertices(resource, dependencies, type, prefix) {
   if (vertices.filter((p) => p.name === prefix + "." + resource).length === 0) {
     vertices.push({
@@ -160,7 +167,7 @@ function addVertices(resource, dependencies, type, prefix) {
       vertex: graph.insertVertex(
         parent,
         null,
-        resource,
+        createReadableName(resource, type),
         locationCache[resource] ? locationCache[resource].x : 70,
         locationCache[resource] ? locationCache[resource].y : 0,
         50,
